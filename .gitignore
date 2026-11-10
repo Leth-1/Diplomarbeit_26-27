@@ -1,0 +1,87 @@
+# ============================================================
+# .gitignore – Diplomarbeit ARA
+# ============================================================
+
+# ---------- Geheimnisse (NIE committen) ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+secrets.json
+appsettings.*.local.json
+
+# ---------- Office-Temporärdateien ----------
+# Entstehen, solange eine Datei in Word/Excel offen ist
+~$*
+*.tmp
+*.bak
+*.asd
+*.wbk
+
+# ---------- Betriebssystem ----------
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+._*
+
+# ---------- Editoren und IDEs ----------
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea/
+*.iml
+.vs/
+*.suo
+*.user
+*.swp
+
+# ---------- Logs ----------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- Frontend (Node / React / Angular / Vue) ----------
+node_modules/
+dist/
+build/
+.angular/
+.next/
+.nuxt/
+.vite/
+coverage/
+.cache/
+
+# ---------- Backend: .NET ----------
+bin/
+obj/
+TestResults/
+
+# ---------- Backend: Java ----------
+target/
+.gradle/
+out/
+*.class
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---------- Datenbanken (lokale Testdaten) ----------
+*.sqlite
+*.sqlite3
+*.db
+!**/migrations/**/*.db
+
+# ---------- Docker ----------
+docker-compose.override.yml
