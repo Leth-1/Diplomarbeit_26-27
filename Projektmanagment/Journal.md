@@ -16,7 +16,8 @@ Die Stunden kommen weiterhin in die Stundeneintragung, nicht hierher.
 
 | Datum | Wer | Bereich | Was |
 |---|---|---|---|
-| 17.11.2026 | Leth | Projektmanagement | Projektjournal angelegt |
+| 17.11.2026 | Leth | Git/Repo | README auf aktuellen Stand gebracht: Lastenheft 0.4, Checkbox statt Studiennachweis, Dokumente, Arbeitsweise (PR #6) |
+| 17.11.2026 | Leth | Projektmanagement | Projektjournal angelegt (PR #5) |
 | 10.11.2026 | Leth | Git/Repo | `.gitignore` angelegt (PR #4) |
 | 10.11.2026 | Leth | Git/Repo | GitHub-Regeln eingerichtet: `main` nur per Pull Request, nur `feature/...`-Branches erlaubt |
 | 10.11.2026 | Leth | Git/Repo | Ordner `Projektmanagment` mit Lastenheft, Erklärung und Logo ins Repo übernommen (PR #3) |
