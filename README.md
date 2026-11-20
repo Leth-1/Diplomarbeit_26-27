@@ -88,7 +88,6 @@ Alle Projektdokumente liegen im Ordner [`Projektmanagment/`](Projektmanagment/):
 |---|---|
 | `Lastenheft_ARA_Version0.4_10.11.docx` / `.pdf` | Lastenheft, aktuelle Version 0.4 |
 | `Erklärung.docx` / `.pdf` | Erklärung zur Diplomarbeit mit den individuellen Aufgabenstellungen (unterschrieben) |
-| `Technikvergleich_Backend.md` / `.pdf` | Vergleich ASP.NET Core, Spring Boot und Node.js mit Empfehlung (Entwurf) |
 | `Journal.md` | Projektjournal: wer hat wann was gemacht |
 | `ARA_Flach_4_Querformat.png` / `.svg` | Projektlogo |
 
