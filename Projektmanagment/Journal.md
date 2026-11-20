@@ -16,7 +16,6 @@ Die Stunden kommen weiterhin in die Stundeneintragung, nicht hierher.
 
 | Datum | Wer | Bereich | Was |
 |---|---|---|---|
-| 20.11.2026 | Leth | Backend | Technikvergleich Backend (ASP.NET Core, Spring Boot, Node.js/NestJS) mit Empfehlung ASP.NET Core (PR #7) |
 | 17.11.2026 | Leth | Git/Repo | README auf aktuellen Stand gebracht: Lastenheft 0.4, Checkbox statt Studiennachweis, Dokumente, Arbeitsweise (PR #6) |
 | 17.11.2026 | Leth | Projektmanagement | Projektjournal angelegt (PR #5) |
 | 10.11.2026 | Leth | Git/Repo | `.gitignore` angelegt (PR #4) |
