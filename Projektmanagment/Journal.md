@@ -16,6 +16,9 @@ Die Stunden kommen weiterhin in die Stundeneintragung, nicht hierher.
 
 | Datum | Wer | Bereich | Was |
 |---|---|---|---|
+| 25.11.2026 | Leth | Git/Repo | Unterschriebene Freigabe ins Repo übernommen, README auf aktuellen Stand gebracht (PR #9) |
+| 24.11.2026 | Team | Projektmanagement | Lastenheft 0.4 mit Fr. Dr. Greslechner besprochen und von ihr freigegeben (unterschrieben am 24.11.2026 in Wien) |
+| 24.11.2026 | Team | Projektmanagement | Im Gespräch mündlich vereinbart: Statt der Checkbox „Ich bin Student/in“ laden Studierende ihren Studierendenausweis hoch, der verschlüsselt gespeichert und vom Personal geprüft wird. Wird in Lastenheft 1.0 übernommen, schriftliche Bestätigung ausstehend. |
 | 17.11.2026 | Leth | Git/Repo | README auf aktuellen Stand gebracht: Lastenheft 0.4, Checkbox statt Studiennachweis, Dokumente, Arbeitsweise (PR #6) |
 | 17.11.2026 | Leth | Projektmanagement | Projektjournal angelegt (PR #5) |
 | 10.11.2026 | Leth | Git/Repo | `.gitignore` angelegt (PR #4) |
