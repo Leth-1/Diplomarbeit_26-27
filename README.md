@@ -13,7 +13,7 @@ Bisher laufen Terminvergabe, Koordination und Abrechnung manuell (Telefon, E-Mai
 ## Aktueller Stand
 
 - **Lastenheft:** Version 0.4 am 24.11.2026 von der Auftraggeberin freigegeben (siehe `Projektmanagment/Freigabe_Lastenheft_ARA_v0.4.pdf`)
-- **Vereinbarte Änderung:** Statt der Checkbox „Ich bin Student/in“ laden Studierende ihren Studierendenausweis hoch. Wird in Lastenheft 1.0 übernommen, schriftliche Bestätigung der Auftraggeberin ausstehend.
+- **Aktuelle Fassung:** Lastenheft 1.0 mit der vereinbarten Änderung: Statt der Checkbox „Ich bin Student/in“ laden Studierende ihren Studierendenausweis hoch. Schriftliche Bestätigung der Änderung durch die Auftraggeberin ausstehend.
 - **Nächster Schritt:** offene Punkte mit der Ordination klären, danach Pflichtenheft
 - **Code:** noch keiner, die Technologieauswahl folgt im Pflichtenheft
 
@@ -88,7 +88,7 @@ Alle Projektdokumente liegen im Ordner [`Projektmanagment/`](Projektmanagment/):
 
 | Datei | Inhalt |
 |---|---|
-| `Lastenheft_ARA_Version0.4_10.11.docx` / `.pdf` | Lastenheft, aktuelle Version 0.4 |
+| `Lastenheft_ARA_Version1.0_25.11.docx` / `.pdf` | Lastenheft, aktuelle Version 1.0 (Version 0.4 ist in der Git-Historie) |
 | `Freigabe_Lastenheft_ARA_v0.4.pdf` | Freigabe des Lastenhefts durch die Auftraggeberin (unterschrieben, 24.11.2026) |
 | `Erklärung.docx` / `.pdf` | Erklärung zur Diplomarbeit mit den individuellen Aufgabenstellungen (unterschrieben) |
 | `Journal.md` | Projektjournal: wer hat wann was gemacht |
