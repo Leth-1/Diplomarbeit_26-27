@@ -16,6 +16,7 @@ Die Stunden kommen weiterhin in die Stundeneintragung, nicht hierher.
 
 | Datum | Wer | Bereich | Was |
 |---|---|---|---|
+| 28.11.2026 | Leth | Projektmanagement | Arbeit mit GitHub-Issues eingeführt: Vorlagen für Aufgaben, Fehler und Pull Requests, Meilensteine, Labels, 62 Issues aus den Arbeitspaketen, Kanban-Board (PR #13) |
 | 28.11.2026 | Leth | Backend | Backend-Grundgerüst angelegt: Solution mit Ara.Api, Ara.Core, Ara.Infrastructure und zwei Testprojekten, SQLite, Identity mit Cookie, Swagger, Problem Details, erste Tests, dazu UML-Diagramme mit Erklärung (`backend/docs`) (PR #12) |
 | 28.11.2026 | Leth | Git/Repo | Pull Requests auf `main` brauchen jetzt die Freigabe von Leth (CODEOWNERS), nur Leth darf direkt auf `main` pushen (PR #11) |
 | 25.11.2026 | Leth | Projektmanagement | Lastenheft 1.0 (Studierendenausweis statt Checkbox, Freigabedatum, Korrekturen) ins Repo übernommen, ersetzt Version 0.4 (PR #10) |

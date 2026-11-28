@@ -1,0 +1,32 @@
+name: Aufgabe
+description: Neue Aufgabe (Arbeitspaket, Feature, Dokument)
+title: "[Nr.] Kurzer Titel"
+labels: []
+body:
+  - type: textarea
+    id: beschreibung
+    attributes:
+      label: Beschreibung
+      description: Was soll gemacht werden und warum?
+    validations:
+      required: true
+  - type: textarea
+    id: ergebnis
+    attributes:
+      label: Ergebnis (wann ist es fertig?)
+      description: Als Checkliste, z. B. "- [ ] Endpunkt POST /api/v1/... liefert 201"
+      value: |
+        - [ ] 
+        - [ ] Tests geschrieben, `dotnet test` ist grün
+    validations:
+      required: true
+  - type: input
+    id: bezug
+    attributes:
+      label: Bezug
+      description: Arbeitspaket und Lastenheft-Nummer, z. B. "AP 2.3, F01"
+  - type: textarea
+    id: hinweise
+    attributes:
+      label: Hinweise
+      description: Abhängigkeiten, Links, offene Fragen
