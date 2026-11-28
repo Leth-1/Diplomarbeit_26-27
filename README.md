@@ -15,7 +15,7 @@ Bisher laufen Terminvergabe, Koordination und Abrechnung manuell (Telefon, E-Mai
 - **Lastenheft:** Version 0.4 am 24.11.2026 von der Auftraggeberin freigegeben (siehe `Projektmanagment/Freigabe_Lastenheft_ARA_v0.4.pdf`)
 - **Aktuelle Fassung:** Lastenheft 1.0 mit der vereinbarten Änderung: Statt der Checkbox „Ich bin Student/in“ laden Studierende ihren Studierendenausweis hoch. Schriftliche Bestätigung der Änderung durch die Auftraggeberin ausstehend.
 - **Nächster Schritt:** offene Punkte mit der Ordination klären, danach Pflichtenheft
-- **Code:** noch keiner, die Technologieauswahl folgt im Pflichtenheft
+- **Code:** Backend-Grundgerüst in [`backend/`](backend/) (ASP.NET Core, SQLite, Tests), Startanleitung in [`backend/README.md`](backend/README.md)
 
 Was zuletzt gemacht wurde, steht im [Projektjournal](Projektmanagment/Journal.md).
 

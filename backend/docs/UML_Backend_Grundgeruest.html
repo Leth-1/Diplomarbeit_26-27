@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>UML Backend-Grundgerüst</title>
+<style>
+  @page { size: A4; margin: 14mm 14mm; }
+  @page quer { size: A3 landscape; margin: 10mm; }
+  :root { --text:#14213D; --grau:#3A4458; --blau:#1D70B8; --rot:#E63946; --linie:#C9CFD8; --kopf:#E8EEF6; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 10pt; color: var(--text); line-height: 1.4; margin: 0; background:#fff; }
+  h1 { font-size: 20pt; margin: 0 0 4pt; border-bottom: 3px solid var(--rot); padding-bottom: 6pt; }
+  h2 { font-size: 14pt; margin: 18pt 0 6pt; color: var(--blau); break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; break-after: avoid; }
+  h3 small { font-weight: normal; color: var(--grau); font-size: 9pt; }
+  p { margin: 4pt 0; color: var(--grau); }
+  code { font-family: Consolas, monospace; font-size: 9pt; background: #EEF1F5; padding: 0 3pt; border-radius: 2pt; }
+  table { border-collapse: collapse; width: 100%; margin: 4pt 0 8pt; }
+  th, td { border: 1px solid var(--linie); padding: 3pt 7pt; text-align: left; vertical-align: top; }
+  th { background: var(--kopf); }
+  td:first-child { width: 36%; font-family: Consolas, monospace; font-size: 8.8pt; }
+  td:nth-child(2) { width: 11%; white-space: nowrap; }
+  tr { break-inside: avoid; }
+  .diagramm { page: quer; break-before: page; break-after: page; }
+  .diagramm h2 { margin-top: 0; }
+  .diagramm .mermaid { display: flex; justify-content: center; }
+  .diagramm svg { max-width: 100% !important; height: auto; max-height: 245mm; }
+  .legende { display: grid; grid-template-columns: auto 1fr; gap: 2pt 10pt; margin: 6pt 0; }
+  .legende span:nth-child(odd) { font-family: Consolas, monospace; white-space: nowrap; }
+  .kasten { background: #F4F7FB; border-left: 4px solid var(--blau); padding: 6pt 10pt; margin: 8pt 0; }
+</style>
+</head>
+<body>
+
+<h1>UML – Backend-Grundgerüst ARA</h1>
+<p>Stand: 28.11.2026 · Branch <code>feature/10-backend-grundgeruest</code> · Klassendiagramme mit Erklärung aller Klassen, Eigenschaften und Methoden</p>
+
+<h2>Wie man die Diagramme liest</h2>
+<div class="legende">
+  <span>+ name</span><span>öffentlich (public), von überall erreichbar</span>
+  <span>- name</span><span>privat (private), nur innerhalb der Klasse</span>
+  <span># name</span><span>geschützt (protected), nur in der Klasse und in abgeleiteten Klassen</span>
+  <span>name$</span><span>statisch (static): gehört zur Klasse, nicht zu einem Objekt</span>
+  <span>name*</span><span>abstrakt</span>
+  <span>Methode(...) Typ</span><span>der Typ hinten ist der Rückgabetyp</span>
+  <span>A ──▷ B</span><span>Vererbung: A erbt von B (A „ist ein“ B)</span>
+  <span>A ──&gt; B</span><span>A verwendet B (Abhängigkeit, z. B. über den Konstruktor)</span>
+  <span>A ..&gt; B</span><span>A erzeugt oder registriert B nur (lose Abhängigkeit)</span>
+  <span>&lt;&lt;record&gt;&gt;</span><span>reiner Datenbehälter für JSON-Antworten</span>
+  <span>graue Kästen</span><span>Klassen aus .NET oder NuGet-Paketen, nicht von uns geschrieben</span>
+</div>
+
+<div class="kasten">
+  <strong>Die Grundregel:</strong> Die Pfeile zwischen den Projekten zeigen nur nach innen.
+  <code>Ara.Api</code> verwendet <code>Ara.Core</code> und <code>Ara.Infrastructure</code>,
+  <code>Ara.Infrastructure</code> verwendet <code>Ara.Core</code>, und <code>Ara.Core</code> verwendet niemanden.
+</div>
+
+<!-- ===================== Übersicht ===================== -->
+<section class="diagramm">
+<h2>Übersicht: Projekte und wichtigste Klassen</h2>
+<pre class="mermaid">
+flowchart LR
+  subgraph API["Ara.Api (Rezeption)"]
+    P["Program.cs"]
+    SC["StatusController"]
+    KC["KontenController"]
+  end
+  subgraph INF["Ara.Infrastructure (Archiv und Post)"]
+    DI["DependencyInjection"]
+    DB["AraDbContext"]
+    INT["SqlitePragmaInterceptor"]
+    MIG["Migrationen"]
+  end
+  subgraph CORE["Ara.Core (Regelbuch)"]
+    BEN["Benutzer"]
+    ROL["Rollen"]
+  end
+  SQL[("SQLite ara.db")]
+  FE["Frontend / Swagger"]
+
+  FE -- "HTTP /api/v1/..." --> SC
+  FE -- "HTTP /api/v1/..." --> KC
+  P -- "beim Start" --> DI
+  DI --> DB
+  DI --> INT
+  DI --> MIG
+  SC --> DB
+  KC -- "UserManager" --> BEN
+  DB --> BEN
+  DI --> ROL
+  DB --> SQL
+  INT -. "PRAGMAs" .-> SQL
+  API ==> CORE
+  INF ==> CORE
+  API ==> INF
+</pre>
+<p>Dicke Pfeile: Projektabhängigkeiten (nur nach innen zu <code>Ara.Core</code>). Dünne Pfeile: wer wen aufruft.</p>
+</section>
+
+<!-- ===================== Diagramm Ara.Api ===================== -->
+<section class="diagramm">
+<h2>Diagramm 1: Ara.Api</h2>
+<pre class="mermaid">
+classDiagram
+direction LR
+class Program {
+  &lt;&lt;top-level&gt;&gt;
+  +Main(string[] args)$ void
+}
+class StatusController {
+  -AraDbContext db
+  -TimeProvider zeit
+  +StatusController(AraDbContext db, TimeProvider zeit)
+  +Get(CancellationToken ct) Task~StatusAntwort~
+}
+class StatusAntwort {
+  &lt;&lt;record&gt;&gt;
+  +string Anwendung
+  +string Version
+  +bool DatenbankErreichbar
+  +DateTimeOffset Zeit
+}
+class KontenController {
+  -UserManager~Benutzer~ benutzer
+  +KontenController(UserManager~Benutzer~ benutzer)
+  +Ich() Task~ActionResult~IchAntwort~~
+}
+class IchAntwort {
+  &lt;&lt;record&gt;&gt;
+  +Guid Id
+  +string Email
+  +string Vorname
+  +string Nachname
+  +IList~string~ Rollen
+}
+class ControllerBase
+class UserManager
+class TimeProvider
+class AraDbContext
+class DependencyInjection
+class Benutzer
+
+ControllerBase <|-- StatusController
+ControllerBase <|-- KontenController
+Program ..> DependencyInjection : AddInfrastruktur, InitialisiereDatenbankAsync
+StatusController --> AraDbContext : CanConnectAsync
+StatusController --> TimeProvider : GetUtcNow
+StatusController ..> StatusAntwort : gibt zurück
+KontenController --> UserManager : GetUserAsync, GetRolesAsync
+KontenController ..> IchAntwort : gibt zurück
+UserManager --> Benutzer : verwaltet
+
+style ControllerBase fill:#EEEEEE,stroke:#999999
+style UserManager fill:#EEEEEE,stroke:#999999
+style TimeProvider fill:#EEEEEE,stroke:#999999
+style AraDbContext fill:#FFF6E0,stroke:#C9A227
+style DependencyInjection fill:#FFF6E0,stroke:#C9A227
+style Benutzer fill:#FFF6E0,stroke:#C9A227
+</pre>
+<p>Grau: aus .NET (<code>UserManager</code> = <code>UserManager&lt;Benutzer&gt;</code>). Gelb: aus anderen Projekten, Details in den nächsten Diagrammen.</p>
+</section>
+
+<!-- ===================== Diagramm Infrastructure + Core ===================== -->
+<section class="diagramm">
+<h2>Diagramm 2: Ara.Infrastructure und Ara.Core</h2>
+<pre class="mermaid">
+classDiagram
+direction LR
+namespace Ara_Infrastructure {
+  class DependencyInjection {
+    &lt;&lt;static&gt;&gt;
+    +AddInfrastruktur(IServiceCollection services)$ IServiceCollection
+    +InitialisiereDatenbankAsync(IServiceProvider services)$ Task
+  }
+  class AraDbContext {
+    +AraDbContext(DbContextOptions~AraDbContext~ options)
+    #OnModelCreating(ModelBuilder builder) void
+  }
+  class SqlitePragmaInterceptor {
+    -string Pragmas$
+    +ConnectionOpened(DbConnection c, ConnectionEndEventData e) void
+    +ConnectionOpenedAsync(DbConnection c, ConnectionEndEventData e, CancellationToken ct) Task
+  }
+}
+namespace Ara_Core {
+  class Benutzer {
+    +string Vorname
+    +string Nachname
+    +DateTimeOffset ErstelltAm
+  }
+  class Rollen {
+    &lt;&lt;static&gt;&gt;
+    +string Studierende$
+    +string Personal$
+    +IReadOnlyList~string~ Alle$
+  }
+}
+class IdentityDbContext
+class DbConnectionInterceptor
+class IdentityUser
+class RoleManager
+
+IdentityDbContext <|-- AraDbContext
+DbConnectionInterceptor <|-- SqlitePragmaInterceptor
+IdentityUser <|-- Benutzer
+DependencyInjection ..> AraDbContext : registriert, migriert
+DependencyInjection ..> SqlitePragmaInterceptor : registriert
+DependencyInjection --> RoleManager : legt Rollen an
+DependencyInjection --> Rollen : liest Alle
+AraDbContext --> Benutzer : Tabelle AspNetUsers
+
+style IdentityDbContext fill:#EEEEEE,stroke:#999999
+style DbConnectionInterceptor fill:#EEEEEE,stroke:#999999
+style IdentityUser fill:#EEEEEE,stroke:#999999
+style RoleManager fill:#EEEEEE,stroke:#999999
+</pre>
+<p>Grau: aus .NET bzw. NuGet. <code>IdentityUser</code> = <code>IdentityUser&lt;Guid&gt;</code>, <code>IdentityDbContext</code> = <code>IdentityDbContext&lt;Benutzer, IdentityRole&lt;Guid&gt;, Guid&gt;</code>, <code>RoleManager</code> = <code>RoleManager&lt;IdentityRole&lt;Guid&gt;&gt;</code>.</p>
+</section>
+
+<!-- ===================== Diagramm 2 ===================== -->
+<section class="diagramm">
+<h2>Diagramm 3: Tests (Ara.Core.Tests, Ara.Api.Tests)</h2>
+<pre class="mermaid">
+classDiagram
+direction LR
+
+namespace Ara_Core_Tests {
+  class ArchitekturTests {
+    +Core_haengt_nicht_ab_von(string verboten) void
+    +Es_gibt_genau_die_Rollen_aus_dem_Lastenheft() void
+  }
+}
+
+namespace Ara_Api_Tests {
+  class DatenbankTest {
+    &lt;&lt;abstract&gt;&gt;
+    -SqliteConnection _connection
+    #AraDbContext Db
+    #DatenbankTest()
+    #NeuerContext() AraDbContext
+    +Dispose() void
+  }
+  class DatenbankTests {
+    +Benutzer_kann_gespeichert_und_gelesen_werden() Task
+  }
+  class AraApiFactory {
+    -string _connectionString
+    -SqliteConnection _halteVerbindung
+    +AraApiFactory()
+    #ConfigureWebHost(IWebHostBuilder builder) void
+    #Dispose(bool disposing) void
+  }
+  class GrundgeruestTests {
+    -HttpClient _client
+    +GrundgeruestTests(AraApiFactory api)
+    +Status_liefert_200_und_Datenbank_ist_erreichbar() Task
+    +Unbekannter_Pfad_liefert_404_als_Problem_Details() Task
+    +Eigenes_Konto_ohne_Anmeldung_liefert_401_statt_Umleitung() Task
+    +Beim_Start_werden_beide_Rollen_angelegt() Task
+    +OpenApi_Beschreibung_ist_abrufbar() Task
+  }
+}
+
+class IDisposable {
+  &lt;&lt;interface&gt;&gt;
+}
+class WebApplicationFactory
+class IClassFixture {
+  &lt;&lt;interface&gt;&gt;
+}
+class AraDbContext
+class Program
+class Benutzer
+class Rollen
+
+IDisposable <|.. DatenbankTest
+DatenbankTest <|-- DatenbankTests
+WebApplicationFactory <|-- AraApiFactory
+IClassFixture <|.. GrundgeruestTests
+
+DatenbankTest --> AraDbContext : frische DB pro Test
+AraApiFactory ..> Program : startet die echte API
+GrundgeruestTests --> AraApiFactory : schickt HTTP-Anfragen
+DatenbankTests ..> Benutzer : speichert und liest
+ArchitekturTests ..> Benutzer : prüft Assembly Ara.Core
+ArchitekturTests ..> Rollen : prüft Inhalt
+
+style IDisposable fill:#EEEEEE,stroke:#999999
+style WebApplicationFactory fill:#EEEEEE,stroke:#999999
+style IClassFixture fill:#EEEEEE,stroke:#999999
+style AraDbContext fill:#FFF6E0,stroke:#C9A227
+style Program fill:#FFF6E0,stroke:#C9A227
+style Benutzer fill:#FFF6E0,stroke:#C9A227
+style Rollen fill:#FFF6E0,stroke:#C9A227
+</pre>
+<p>Gelbe Kästen: Klassen aus der Anwendung (Diagramm 1 und 2), die von den Tests verwendet werden. <code>WebApplicationFactory</code> = <code>WebApplicationFactory&lt;Program&gt;</code>, <code>IClassFixture</code> = <code>IClassFixture&lt;AraApiFactory&gt;</code>.</p>
+</section>
+
+<!-- ===================== Erklärungen ===================== -->
+<h2>Erklärung: Ara.Core</h2>
+
+<h3>Benutzer <small>Konten/Benutzer.cs · erbt von IdentityUser&lt;Guid&gt;</small></h3>
+<p>Ein Konto in ARA, egal ob Studierende oder Personal. Von <code>IdentityUser</code> kommen schon E-Mail, Passwort-Hash, „E-Mail bestätigt“, Sperre usw.; wir ergänzen nur, was ARA zusätzlich braucht. Die Id ist eine <code>Guid</code> statt einer fortlaufenden Zahl, damit niemand IDs erraten kann.</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>+ Vorname : string</td><td>Eigenschaft</td><td>Vorname der Person. Startwert <code>""</code>, damit er nie <code>null</code> ist.</td></tr>
+<tr><td>+ Nachname : string</td><td>Eigenschaft</td><td>Nachname der Person.</td></tr>
+<tr><td>+ ErstelltAm : DateTimeOffset</td><td>Eigenschaft</td><td>Zeitpunkt der Registrierung, in UTC gespeichert.</td></tr>
+<tr><td>(geerbt) Id, Email, UserName, PasswordHash, EmailConfirmed, LockoutEnd, …</td><td>Eigenschaften</td><td>Kommen von <code>IdentityUser</code> und werden von Identity selbst befüllt. Nie direkt setzen, sondern über den <code>UserManager</code>.</td></tr>
+</table>
+
+<h3>Rollen <small>Konten/Rollen.cs · static</small></h3>
+<p>Die zwei Rollen aus dem Lastenheft (F02) an einer einzigen Stelle. Wer eine Rolle braucht, schreibt <code>Rollen.Personal</code> statt <code>"Personal"</code>, so gibt es keine Tippfehler.</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>+ Studierende$ : string</td><td>Konstante</td><td>Name der Rolle für Studierende: <code>"Studierende"</code>.</td></tr>
+<tr><td>+ Personal$ : string</td><td>Konstante</td><td>Name der Rolle für das Ordinationspersonal: <code>"Personal"</code>.</td></tr>
+<tr><td>+ Alle$ : IReadOnlyList&lt;string&gt;</td><td>Feld</td><td>Liste beider Rollen. Wird beim Start verwendet, um fehlende Rollen anzulegen. Nur lesbar, damit niemand zur Laufzeit Rollen dazuschreibt.</td></tr>
+</table>
+
+<h2>Erklärung: Ara.Infrastructure</h2>
+
+<h3>AraDbContext <small>Persistenz/AraDbContext.cs · erbt von IdentityDbContext</small></h3>
+<p>Die Brücke zwischen C#-Objekten und der SQLite-Datenbank (Entity Framework Core). Weil er von <code>IdentityDbContext</code> erbt, hat er schon alle Tabellen für Benutzer, Rollen, Logins und Tokens (<code>AspNetUsers</code>, <code>AspNetRoles</code>, …). Julius ergänzt hier später <code>DbSet&lt;Buchung&gt;</code> usw.</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>+ AraDbContext(DbContextOptions&lt;AraDbContext&gt; options)</td><td>Konstruktor</td><td>Bekommt die Einstellungen (welche Datenbank, welche Verbindung) von außen. In der API kommen sie aus <code>AddInfrastruktur</code>, in den Tests aus <code>DatenbankTest</code>. Geschrieben als Primärkonstruktor direkt hinter dem Klassennamen.</td></tr>
+<tr><td># OnModelCreating(ModelBuilder builder) : void</td><td>Methode (override)</td><td>Wird von EF Core einmal aufgerufen, um das Datenmodell zu bauen. Zuerst <code>base.OnModelCreating</code> (Identity-Tabellen), danach <code>ApplyConfigurationsFromAssembly</code>: Alle Klassen, die <code>IEntityTypeConfiguration</code> umsetzen, werden automatisch gefunden. Neue Tabellen braucht man hier also nicht einzeln einzutragen.</td></tr>
+<tr><td>(geerbt) Users, Roles, UserRoles, …</td><td>DbSets</td><td>Zugriff auf die Identity-Tabellen, z. B. <code>Db.Users.Add(...)</code> im Test.</td></tr>
+</table>
+
+<h3>SqlitePragmaInterceptor <small>Persistenz/SqlitePragmaInterceptor.cs · erbt von DbConnectionInterceptor</small></h3>
+<p>Ein „Abfänger“: EF Core ruft ihn jedes Mal auf, wenn eine Verbindung zur Datenbank geöffnet wurde. Dann schickt er drei SQLite-Einstellungen (PRAGMAs) ab.</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>- Pragmas$ : string</td><td>Konstante</td><td><code>journal_mode=WAL</code>: Lesen und Schreiben gleichzeitig möglich. <code>busy_timeout=5000</code>: bei belegter Datenbank bis 5 Sekunden warten statt Fehler. <code>foreign_keys=ON</code>: Verweise zwischen Tabellen werden geprüft (in SQLite sonst aus).</td></tr>
+<tr><td>+ ConnectionOpened(DbConnection c, ConnectionEndEventData e) : void</td><td>Methode (override)</td><td>Wird nach dem Öffnen einer Verbindung im synchronen Fall aufgerufen. Erstellt einen SQL-Befehl mit den Pragmas und führt ihn aus.</td></tr>
+<tr><td>+ ConnectionOpenedAsync(DbConnection c, ConnectionEndEventData e, CancellationToken ct) : Task</td><td>Methode (override)</td><td>Dasselbe für den asynchronen Fall (<code>await</code>). Beide werden gebraucht, weil EF Core je nach Aufruf (<code>SaveChanges</code> oder <code>SaveChangesAsync</code>) die eine oder andere verwendet.</td></tr>
+</table>
+
+<h3>DependencyInjection <small>DependencyInjection.cs · static</small></h3>
+<p>Sammelstelle für alles, was <code>Ara.Infrastructure</code> beim Start anmelden muss. So muss <code>Program.cs</code> nur eine Zeile aufrufen und die Details bleiben in diesem Projekt.</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>+ AddInfrastruktur(this IServiceCollection services)$ : IServiceCollection</td><td>Erweiterungsmethode</td><td>Meldet den <code>SqlitePragmaInterceptor</code> (einmal für die ganze Anwendung, Singleton) und den <code>AraDbContext</code> an. Die Verbindungszeichenfolge <code>ConnectionStrings:Ara</code> wird erst gelesen, wenn ein Context gebraucht wird; dadurch können die Tests sie durch eine In-Memory-Datenbank ersetzen. Fehlt sie, gibt es eine klare Fehlermeldung. Gibt <code>services</code> zurück, damit man weitere <code>Add...</code>-Aufrufe anhängen kann. Später kommen hier Zahlung, E-Mail und Dateiablage dazu.</td></tr>
+<tr><td>+ InitialisiereDatenbankAsync(this IServiceProvider services)$ : Task</td><td>Erweiterungsmethode</td><td>Läuft einmal nach dem Start. Erstellt einen Scope (weil der DbContext pro Anfrage gedacht ist), spielt mit <code>MigrateAsync</code> alle fehlenden Migrationen ein (legt die Datei <code>ara.db</code> an, falls es sie noch nicht gibt) und legt mit dem <code>RoleManager</code> jede Rolle aus <code>Rollen.Alle</code> an, die noch fehlt. Mehrfaches Starten ist also problemlos.</td></tr>
+</table>
+
+<h3>Migrationen <small>Persistenz/Migrationen/ · automatisch erzeugt</small></h3>
+<p>Werden mit <code>dotnet ef migrations add</code> erzeugt und nicht von Hand geschrieben. Sie sind die „Versionsgeschichte“ des Datenbankschemas.</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>Start.Up(MigrationBuilder b) : void</td><td>Methode</td><td>Legt alle Identity-Tabellen an (<code>AspNetUsers</code> mit Vorname, Nachname, ErstelltAm usw.).</td></tr>
+<tr><td>Start.Down(MigrationBuilder b) : void</td><td>Methode</td><td>Macht <code>Up</code> rückgängig (löscht die Tabellen wieder).</td></tr>
+<tr><td>AraDbContextModelSnapshot.BuildModel(ModelBuilder b) : void</td><td>Methode</td><td>Aktueller Stand des Modells. EF Core vergleicht ihn bei der nächsten Migration mit dem Code und erkennt so die Änderungen.</td></tr>
+</table>
+
+<h2>Erklärung: Ara.Api</h2>
+
+<h3>Program <small>Program.cs · Top-Level-Anweisungen</small></h3>
+<p><code>Program.cs</code> hat keine sichtbare Klasse und keine <code>Main</code>-Methode: Der Compiler baut beides aus den Anweisungen in der Datei. Die Zeile <code>public partial class Program;</code> am Ende macht die Klasse für die Tests (<code>WebApplicationFactory&lt;Program&gt;</code>) sichtbar.</p>
+<table>
+<tr><th>Abschnitt</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>WebApplication.CreateBuilder(args)</td><td>Start</td><td>Liest <code>appsettings.json</code>, Umgebungsvariablen und Startparameter und bereitet die Dienste vor.</td></tr>
+<tr><td>AddControllers()</td><td>Dienst</td><td>Findet alle Controller-Klassen.</td></tr>
+<tr><td>AddProblemDetails()</td><td>Dienst</td><td>Fehler werden im Format Problem Details (RFC 9457) als JSON ausgegeben.</td></tr>
+<tr><td>AddOpenApi("v1")</td><td>Dienst</td><td>Erzeugt die Beschreibung aller Endpunkte unter <code>/openapi/v1.json</code>.</td></tr>
+<tr><td>AddInfrastruktur()</td><td>Dienst</td><td>Datenbank anmelden (siehe <code>DependencyInjection</code>).</td></tr>
+<tr><td>AddSingleton(TimeProvider.System)</td><td>Dienst</td><td>Stellt die aktuelle Uhrzeit bereit. In Tests kann man sie durch eine feste Zeit ersetzen (wichtig für Stornofristen und Reservierungsablauf).</td></tr>
+<tr><td>AddIdentityCore&lt;Benutzer&gt;(…)</td><td>Dienst</td><td>Anmeldesystem: E-Mail eindeutig, E-Mail-Bestätigung Pflicht, Passwort mindestens 10 Zeichen, Sperre 15 Minuten nach 5 Fehlversuchen. <code>.AddRoles</code> (Rollen), <code>.AddEntityFrameworkStores</code> (speichert in <code>AraDbContext</code>), <code>.AddSignInManager</code> (Anmelden/Abmelden), <code>.AddDefaultTokenProviders</code> (Links für E-Mail-Bestätigung und Passwort-Reset).</td></tr>
+<tr><td>AddAuthentication(…).AddIdentityCookies()</td><td>Dienst</td><td>Anmeldung läuft über ein Cookie.</td></tr>
+<tr><td>ConfigureApplicationCookie(…)</td><td>Dienst</td><td>Cookie <code>ara.auth</code>: <code>HttpOnly</code> (kein Zugriff aus JavaScript), <code>Secure</code> (nur HTTPS), <code>SameSite=Lax</code> (Schutz gegen CSRF), 8 Stunden gültig und verlängert sich bei Aktivität. <code>OnRedirectToLogin</code>/<code>OnRedirectToAccessDenied</code> antworten mit 401/403 statt auf eine Login-Seite umzuleiten.</td></tr>
+<tr><td>AddAuthorization()</td><td>Dienst</td><td>Ermöglicht <code>[Authorize]</code> und Rollenprüfungen.</td></tr>
+<tr><td>InitialisiereDatenbankAsync()</td><td>Start</td><td>Migrationen und Rollen (siehe oben).</td></tr>
+<tr><td>UseExceptionHandler()</td><td>Pipeline</td><td>Fängt Abstürze ab und gibt eine saubere 500-Antwort als Problem Details zurück, ohne interne Details zu verraten.</td></tr>
+<tr><td>UseStatusCodePages()</td><td>Pipeline</td><td>Leere Fehlerantworten (z. B. 404) bekommen ebenfalls einen Problem-Details-Text.</td></tr>
+<tr><td>MapOpenApi() / UseSwaggerUI()</td><td>Pipeline</td><td>Nur in der Entwicklung: OpenAPI-Datei und Swagger-Oberfläche unter <code>/swagger</code>.</td></tr>
+<tr><td>UseHttpsRedirection()</td><td>Pipeline</td><td>Leitet <code>http</code> auf <code>https</code> um.</td></tr>
+<tr><td>UseAuthentication()</td><td>Pipeline</td><td>Liest das Cookie und stellt fest, wer die Anfrage schickt.</td></tr>
+<tr><td>UseAuthorization()</td><td>Pipeline</td><td>Prüft, ob diese Person den Endpunkt aufrufen darf.</td></tr>
+<tr><td>MapControllers() / Run()</td><td>Pipeline</td><td>Verbindet die URLs mit den Controller-Methoden und startet den Server.</td></tr>
+</table>
+
+<h3>StatusController <small>Controllers/StatusController.cs · erbt von ControllerBase</small></h3>
+<p>Lebenszeichen der API. Route <code>/api/v1/status</code>, ohne Anmeldung (<code>[AllowAnonymous]</code>).</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>+ StatusController(AraDbContext db, TimeProvider zeit)</td><td>Konstruktor</td><td>ASP.NET Core übergibt Datenbank und Uhr automatisch (Dependency Injection). Pro Anfrage wird ein neuer Controller erstellt.</td></tr>
+<tr><td>+ Get(CancellationToken ct) : Task&lt;StatusAntwort&gt;</td><td>Methode, GET</td><td>Prüft mit <code>CanConnectAsync</code>, ob die Datenbank erreichbar ist, und liefert Anwendungsname, Version, Datenbankstatus und aktuelle Zeit (UTC). Das <code>CancellationToken</code> bricht die Abfrage ab, wenn der Aufrufer die Verbindung schließt.</td></tr>
+</table>
+
+<h3>StatusAntwort <small>record in StatusController</small></h3>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>+ Anwendung : string</td><td>Eigenschaft</td><td>Immer <code>"ARA"</code>.</td></tr>
+<tr><td>+ Version : string</td><td>Eigenschaft</td><td>Version der API aus der Assembly, z. B. <code>1.0.0</code>.</td></tr>
+<tr><td>+ DatenbankErreichbar : bool</td><td>Eigenschaft</td><td><code>true</code>, wenn SQLite antwortet.</td></tr>
+<tr><td>+ Zeit : DateTimeOffset</td><td>Eigenschaft</td><td>Serverzeit in UTC.</td></tr>
+</table>
+
+<h3>KontenController <small>Controllers/KontenController.cs · erbt von ControllerBase</small></h3>
+<p>Modul Konten (F01, F02), Route <code>/api/v1/konten</code>. Hier kommen als Nächstes Registrieren, Anmelden, Abmelden und Passwort-Reset dazu.</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>+ KontenController(UserManager&lt;Benutzer&gt; benutzer)</td><td>Konstruktor</td><td>Bekommt den <code>UserManager</code> von Identity. Über ihn laufen alle Kontoaktionen (anlegen, Passwort prüfen, Rollen vergeben).</td></tr>
+<tr><td>+ Ich() : Task&lt;ActionResult&lt;IchAntwort&gt;&gt;</td><td>Methode, GET <code>/ich</code></td><td>Nur mit Anmeldung (<code>[Authorize]</code>). Holt mit <code>GetUserAsync(User)</code> den Benutzer zum Cookie und gibt Id, E-Mail, Name und Rollen zurück. Ohne Anmeldung antwortet die API mit 401, bevor die Methode überhaupt läuft. <code>[ProducesResponseType]</code> beschreibt die möglichen Antworten für Swagger.</td></tr>
+</table>
+
+<h3>IchAntwort <small>record in KontenController</small></h3>
+<p>Absichtlich ein eigener Datenbehälter: Würde man direkt den <code>Benutzer</code> zurückgeben, kämen auch Passwort-Hash und Sicherheitsstempel mit.</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>+ Id : Guid</td><td>Eigenschaft</td><td>Id des Kontos.</td></tr>
+<tr><td>+ Email : string</td><td>Eigenschaft</td><td>E-Mail-Adresse.</td></tr>
+<tr><td>+ Vorname, Nachname : string</td><td>Eigenschaften</td><td>Name der Person.</td></tr>
+<tr><td>+ Rollen : IList&lt;string&gt;</td><td>Eigenschaft</td><td>z. B. <code>["Studierende"]</code>. Das Frontend zeigt danach die passenden Menüs.</td></tr>
+</table>
+
+<h2>Erklärung: Tests</h2>
+
+<h3>ArchitekturTests <small>Ara.Core.Tests/ArchitekturTests.cs</small></h3>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>+ Core_haengt_nicht_ab_von(string verboten) : void</td><td>Test (Theory)</td><td>Läuft viermal, je einmal mit <code>Microsoft.EntityFrameworkCore</code>, <code>Microsoft.Data.Sqlite</code>, <code>Ara.Infrastructure</code>, <code>Ara.Api</code>. Liest die Liste der Bibliotheken, die <code>Ara.Core</code> verwendet, und schlägt fehl, wenn eine verbotene dabei ist. So bleibt die Architekturregel automatisch eingehalten.</td></tr>
+<tr><td>+ Es_gibt_genau_die_Rollen_aus_dem_Lastenheft() : void</td><td>Test (Fact)</td><td>Prüft, dass <code>Rollen.Alle</code> genau „Studierende“ und „Personal“ enthält.</td></tr>
+</table>
+
+<h3>DatenbankTest <small>Ara.Api.Tests/Infrastruktur/DatenbankTest.cs · abstract, IDisposable</small></h3>
+<p>Basisklasse für Tests direkt gegen die Datenbank, ohne HTTP. xUnit erstellt für jeden Test ein neues Objekt, also bekommt jeder Test eine eigene, leere Datenbank.</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>- _connection : SqliteConnection</td><td>Feld</td><td>Verbindung zu <code>:memory:</code>. Sie muss offen bleiben, sonst verschwindet die Datenbank.</td></tr>
+<tr><td># Db : AraDbContext</td><td>Feld</td><td>Der Context, mit dem die abgeleiteten Tests arbeiten.</td></tr>
+<tr><td># DatenbankTest()</td><td>Konstruktor</td><td>Öffnet die Verbindung, baut die Optionen (SQLite, Log im Debug-Fenster, sensible Daten im Log sichtbar) und spielt mit <code>Migrate()</code> alle Migrationen ein. So testet man gegen genau das Schema, das auch die echte API hat.</td></tr>
+<tr><td># NeuerContext() : AraDbContext</td><td>Methode</td><td>Zweiter Context auf derselben Datenbank. Nötig, um zu prüfen, ob Daten wirklich gespeichert wurden und nicht nur im Speicher des ersten Contexts liegen.</td></tr>
+<tr><td>+ Dispose() : void</td><td>Methode</td><td>Wird nach jedem Test aufgerufen: schließt Context und Verbindung, die Datenbank ist danach weg.</td></tr>
+</table>
+
+<h3>DatenbankTests <small>Ara.Api.Tests/DatenbankTests.cs · erbt von DatenbankTest</small></h3>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>+ Benutzer_kann_gespeichert_und_gelesen_werden() : Task</td><td>Test</td><td>Legt einen Benutzer „Anna Muster“ an, speichert ihn, liest ihn mit einem frischen Context wieder und prüft den Vornamen. Beweist, dass Migration und Tabelle funktionieren.</td></tr>
+</table>
+
+<h3>AraApiFactory <small>Ara.Api.Tests/Infrastruktur/AraApiFactory.cs · erbt von WebApplicationFactory&lt;Program&gt;</small></h3>
+<p>Startet die komplette API im Arbeitsspeicher, ohne echten Server und ohne <code>ara.db</code>.</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>- _connectionString : string</td><td>Feld</td><td>Name einer gemeinsamen In-Memory-Datenbank mit zufälligem Namen (<code>mode=memory&amp;cache=shared</code>), damit sich parallel laufende Testklassen nicht in die Quere kommen.</td></tr>
+<tr><td>- _halteVerbindung : SqliteConnection</td><td>Feld</td><td>Bleibt die ganze Zeit offen, damit die Datenbank zwischen den Anfragen erhalten bleibt.</td></tr>
+<tr><td>+ AraApiFactory()</td><td>Konstruktor</td><td>Öffnet die Halteverbindung.</td></tr>
+<tr><td># ConfigureWebHost(IWebHostBuilder builder) : void</td><td>Methode (override)</td><td>Stellt die Umgebung auf „Development“ (damit Swagger aktiv ist) und ersetzt <code>ConnectionStrings:Ara</code> durch die Test-Datenbank. Beim Start der API laufen dann Migrationen und Rollen auf dieser Datenbank.</td></tr>
+<tr><td># Dispose(bool disposing) : void</td><td>Methode (override)</td><td>Fährt die API herunter und schließt die Halteverbindung.</td></tr>
+</table>
+
+<h3>GrundgeruestTests <small>Ara.Api.Tests/GrundgeruestTests.cs · IClassFixture&lt;AraApiFactory&gt;</small></h3>
+<p><code>IClassFixture</code> bedeutet: Alle Tests dieser Klasse teilen sich eine gestartete API (schneller).</p>
+<table>
+<tr><th>Mitglied</th><th>Art</th><th>Erklärung</th></tr>
+<tr><td>- _client : HttpClient</td><td>Feld</td><td>Schickt Anfragen an die Test-API. Adresse <code>https://localhost</code> (wegen des Secure-Cookies), Umleitungen werden nicht automatisch verfolgt, damit man 401 sieht statt einer Login-Seite.</td></tr>
+<tr><td>+ GrundgeruestTests(AraApiFactory api)</td><td>Konstruktor</td><td>xUnit übergibt die gemeinsame Factory.</td></tr>
+<tr><td>+ Status_liefert_200_und_Datenbank_ist_erreichbar() : Task</td><td>Test</td><td><code>GET /api/v1/status</code> → 200, Anwendung „ARA“, Datenbank erreichbar.</td></tr>
+<tr><td>+ Unbekannter_Pfad_liefert_404_als_Problem_Details() : Task</td><td>Test</td><td>Ein Pfad, den es nicht gibt → 404 mit Inhaltstyp <code>application/problem+json</code>.</td></tr>
+<tr><td>+ Eigenes_Konto_ohne_Anmeldung_liefert_401_statt_Umleitung() : Task</td><td>Test</td><td><code>GET /api/v1/konten/ich</code> ohne Cookie → 401. Grundlage für A06 (Berechtigungen).</td></tr>
+<tr><td>+ Beim_Start_werden_beide_Rollen_angelegt() : Task</td><td>Test</td><td>Holt den <code>RoleManager</code> direkt aus der API und prüft, dass beide Rollen existieren.</td></tr>
+<tr><td>+ OpenApi_Beschreibung_ist_abrufbar() : Task</td><td>Test</td><td><code>/openapi/v1.json</code> liefert 200 und enthält den Status-Endpunkt. Darauf verlässt sich Omar für die TypeScript-Typen.</td></tr>
+</table>
+
+<h2>Ablauf einer Anfrage (Zusammenfassung)</h2>
+<pre class="mermaid">
+sequenceDiagram
+  participant F as Frontend
+  participant P as Pipeline (Program.cs)
+  participant K as KontenController
+  participant U as UserManager
+  participant D as AraDbContext / SQLite
+  F->>P: GET /api/v1/konten/ich (mit Cookie ara.auth)
+  P->>P: UseAuthentication: Cookie lesen, wer ist das?
+  P->>P: UseAuthorization: [Authorize] erfüllt?
+  alt nicht angemeldet
+    P-->>F: 401 Unauthorized (Problem Details)
+  else angemeldet
+    P->>K: Ich()
+    K->>U: GetUserAsync(User)
+    U->>D: SELECT aus AspNetUsers
+    D-->>U: Benutzer
+    K->>U: GetRolesAsync(benutzer)
+    U-->>K: ["Studierende"]
+    K-->>F: 200 OK, IchAntwort als JSON
+  end
+</pre>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: { fontFamily: 'Segoe UI, Arial, sans-serif', primaryColor: '#E8EEF6', primaryBorderColor: '#1D70B8', lineColor: '#3A4458', primaryTextColor: '#14213D' },
+    class: { useMaxWidth: true },
+    sequence: { useMaxWidth: true }
+  });
+</script>
+</body>
+</html>
