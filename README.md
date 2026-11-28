@@ -97,6 +97,7 @@ Alle Projektdokumente liegen im Ordner [`Projektmanagment/`](Projektmanagment/):
 ## Arbeitsweise im Repository
 
 - **`main` ist geschützt:** Änderungen kommen nur über einen Pull Request hinein.
+- **Freigabe durch Leth:** Jeder Pull Request braucht die Freigabe (Approve) von Leth, erst dann kann er gemergt werden (`.github/CODEOWNERS`).
 - **Nur Feature-Branches:** Branch-Namen müssen mit `feature/` beginnen, z. B. `feature/05-datenbankschema`.
 - **Journal pflegen:** Wer etwas erledigt, trägt es in [`Journal.md`](Projektmanagment/Journal.md) ein, am besten im selben Pull Request.
 
@@ -110,7 +111,7 @@ git commit -m "Datenbankschema: erste Version"
 git push -u origin feature/05-datenbankschema
 ```
 
-Danach auf GitHub **Compare & pull request** klicken und den Pull Request mergen.
+Danach auf GitHub **Compare & pull request** klicken. Sobald Leth den Pull Request freigegeben hat, kann er gemergt werden.
 
 > Achtung: `git clean -f` löscht nicht eingecheckte Dateien endgültig. Vorher immer mit `git clean -n` prüfen, was gelöscht würde.
 
