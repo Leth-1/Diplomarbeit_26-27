@@ -91,6 +91,7 @@ Alle Projektdokumente liegen im Ordner [`Projektmanagment/`](Projektmanagment/):
 | `Lastenheft_ARA_Version1.0_25.11.docx` / `.pdf` | Lastenheft, aktuelle Version 1.0 (Version 0.4 ist in der Git-Historie) |
 | `Freigabe_Lastenheft_ARA_v0.4.pdf` | Freigabe des Lastenhefts durch die Auftraggeberin (unterschrieben, 24.11.2026) |
 | `Erklärung.docx` / `.pdf` | Erklärung zur Diplomarbeit mit den individuellen Aufgabenstellungen (unterschrieben) |
+| `Projekthandbuch_ARA.md` / `.pdf` | Projekthandbuch: Organisation, Projektstrukturplan, Meilensteine, Risiken, Kommunikation, Arbeitsweise |
 | `Journal.md` | Projektjournal: wer hat wann was gemacht |
 | `ARA_Flach_4_Querformat.png` / `.svg` | Projektlogo |
 
